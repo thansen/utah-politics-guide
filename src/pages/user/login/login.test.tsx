@@ -1,4 +1,4 @@
-﻿// @ts-ignore
+// @ts-expect-error
 import { startMock } from '@@/requestRecordMock';
 import { TestBrowser } from '@@/testBrowser';
 import { fireEvent, render } from '@testing-library/react';
@@ -88,7 +88,7 @@ describe('Login Page', () => {
 
     await (await rootContainer.findByText('Login')).click();
 
-    // 等待接口返回结果
+    // Wait for API response
     await waitTime(5000);
 
     await rootContainer.findAllByText('Ant Design Pro');

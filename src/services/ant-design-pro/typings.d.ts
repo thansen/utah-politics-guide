@@ -51,7 +51,7 @@ declare namespace API {
 
   type RuleList = {
     data?: RuleListItem[];
-    /** 列表的内容总数 */
+    /** Total number of items */
     total?: number;
     success?: boolean;
   };
@@ -69,17 +69,17 @@ declare namespace API {
   };
 
   type ErrorResponse = {
-    /** 业务约定的错误码 */
+    /** Error code */
     errorCode: string;
-    /** 业务上的错误信息 */
+    /** Error message */
     errorMessage?: string;
-    /** 业务上的请求是否成功 */
+    /** Whether the request was successful */
     success?: boolean;
   };
 
   type NoticeIconList = {
     data?: NoticeIconItem[];
-    /** 列表的内容总数 */
+    /** Total number of items */
     total?: number;
     success?: boolean;
   };

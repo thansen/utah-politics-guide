@@ -16,16 +16,19 @@ export default defineConfig({
   fastRefresh: true,
   model: {},
   initialState: {},
-  title: 'Utah Politics API Explorer',
+  title: 'Utah Politics Guide',
   layout: {
-    locale: false,
+    locale: true,
     ...defaultSettings,
   },
   moment2dayjs: {
     preset: 'antd',
     plugins: ['duration'],
   },
-  locale: false,
+  locale: {
+    default: 'en-US',
+    antd: true,
+  },
   antd: {
     appConfig: {},
   },

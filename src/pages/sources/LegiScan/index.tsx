@@ -19,6 +19,14 @@ const config: ApiSourceConfig = {
       method: 'GET',
       path: '/?key={key}&op=getSessionList&state={state}',
       description: 'Get all legislative sessions for a state.',
+      extractions: [
+        {
+          targetEndpoint: 'get-session-people',
+          targetParam: 'id',
+          responsePath: 'sessions.session_id',
+          label: 'session_id from session-list',
+        },
+      ],
       params: [
         {
           name: 'key',
@@ -50,6 +58,14 @@ const config: ApiSourceConfig = {
       method: 'GET',
       path: '/?key={key}&op=getMasterList&state={state}',
       description: 'Get all bills for a state in the current session.',
+      extractions: [
+        {
+          targetEndpoint: 'get-bill',
+          targetParam: 'id',
+          responsePath: 'masterlist.bill_id',
+          label: 'bill_id from master-list',
+        },
+      ],
       params: [
         {
           name: 'key',
@@ -78,6 +94,26 @@ const config: ApiSourceConfig = {
       method: 'GET',
       path: '/?key={key}&op=getBill&id={id}',
       description: 'Get detailed information for a specific bill by ID.',
+      extractions: [
+        {
+          targetEndpoint: 'get-bill-text',
+          targetParam: 'id',
+          responsePath: 'bill.texts.doc_id',
+          label: 'doc_id from get-bill',
+        },
+        {
+          targetEndpoint: 'get-roll-call',
+          targetParam: 'id',
+          responsePath: 'bill.votes.roll_call_id',
+          label: 'roll_call_id from get-bill',
+        },
+        {
+          targetEndpoint: 'get-person',
+          targetParam: 'id',
+          responsePath: 'bill.sponsors.people_id',
+          label: 'people_id from get-bill',
+        },
+      ],
       params: [
         {
           name: 'key',
@@ -170,6 +206,14 @@ const config: ApiSourceConfig = {
       method: 'GET',
       path: '/?key={key}&op=search&state={state}&query={query}',
       description: 'Search bills by keyword within a state.',
+      extractions: [
+        {
+          targetEndpoint: 'get-bill',
+          targetParam: 'id',
+          responsePath: 'searchresult.results.bill_id',
+          label: 'bill_id from search',
+        },
+      ],
       params: [
         {
           name: 'key',
@@ -205,6 +249,14 @@ const config: ApiSourceConfig = {
       method: 'GET',
       path: '/?key={key}&op=getSessionPeople&id={id}',
       description: 'Get all legislators for a specific session.',
+      extractions: [
+        {
+          targetEndpoint: 'get-person',
+          targetParam: 'id',
+          responsePath: 'sessionpeople.people.people_id',
+          label: 'people_id from session-people',
+        },
+      ],
       params: [
         {
           name: 'key',
@@ -230,7 +282,7 @@ const config: ApiSourceConfig = {
         path = path.replace(`{${key}}`, encodeURIComponent(String(value)));
       }
     }
-    return `/proxy/legiscan${path}`;
+    return `/api/proxy/legiscan${path}`;
   },
 };
 

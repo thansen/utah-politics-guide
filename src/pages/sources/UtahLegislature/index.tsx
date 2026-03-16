@@ -18,6 +18,14 @@ const config: ApiSourceConfig = {
       method: 'GET',
       path: '/bills/{session}/billlist/{token}',
       description: 'Get a list of all bills for a legislative session.',
+      extractions: [
+        {
+          targetEndpoint: 'bill-detail',
+          targetParam: 'bill',
+          responsePath: 'bills.bill',
+          label: 'bill from bill-list',
+        },
+      ],
       params: [
         {
           name: 'session',
@@ -167,6 +175,14 @@ const config: ApiSourceConfig = {
       path: '/code/list/{token}',
       description:
         'Get a list of all Utah Code titles. Check no more than once per day.',
+      extractions: [
+        {
+          targetEndpoint: 'code-section',
+          targetParam: 'section',
+          responsePath: 'titles.number',
+          label: 'title number from code-list',
+        },
+      ],
       params: [
         {
           name: 'token',
@@ -210,7 +226,7 @@ const config: ApiSourceConfig = {
         path = path.replace(`{${key}}`, encodeURIComponent(String(value)));
       }
     }
-    return `/proxy/utah-leg${path}`;
+    return `/api/proxy/utah-leg${path}`;
   },
 };
 

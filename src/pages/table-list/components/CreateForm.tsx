@@ -19,9 +19,8 @@ const CreateForm: FC<CreateFormProps> = (props) => {
 
   const [messageApi, contextHolder] = message.useMessage();
   /**
-   * @en-US International configuration
-   * @zh-CN 国际化配置
-   * */
+   * International configuration
+   */
   const intl = useIntl();
 
   const { run, loading } = useRequest(addRule, {
