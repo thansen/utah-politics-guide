@@ -36,6 +36,13 @@ export interface EndpointParam {
   description?: string;
 }
 
+export interface ExtractionRule {
+  targetEndpoint: string;
+  targetParam: string;
+  responsePath: string;
+  label: string;
+}
+
 export interface Endpoint {
   id: string;
   label: string;
@@ -43,6 +50,7 @@ export interface Endpoint {
   path: string;
   params: EndpointParam[];
   description: string;
+  extractions?: ExtractionRule[];
 }
 
 export interface ApiSourceConfig {
@@ -55,6 +63,31 @@ export interface ApiSourceConfig {
   envVar?: string;
   endpoints: Endpoint[];
   buildRequestUrl: (endpoint: Endpoint, params: Record<string, any>) => string;
+}
+
+function extractValueFromResponse(data: any, path: string): any {
+  const segments = path.split('.');
+  let current = data;
+  for (const seg of segments) {
+    if (current == null) return undefined;
+    if (Array.isArray(current)) {
+      current = current[0]?.[seg];
+    } else if (typeof current === 'object') {
+      if (seg in current) {
+        current = current[seg];
+      } else {
+        const vals = Object.values(current);
+        if (vals.length > 0 && typeof vals[0] === 'object') {
+          current = (vals[0] as any)?.[seg];
+        } else {
+          return undefined;
+        }
+      }
+    } else {
+      return undefined;
+    }
+  }
+  return current;
 }
 
 const methodColors: Record<string, string> = {
@@ -225,8 +258,16 @@ export default function ApiExplorer({ config }: { config: ApiSourceConfig }) {
     status: number;
     timing: number;
     url: string;
+    cacheStatus?: string;
+    cacheAge?: string;
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [extractedValues, setExtractedValues] = useState<
+    Map<string, { value: any; fromEndpoint: string; label: string }>
+  >(new Map());
+  const [autoFilled, setAutoFilled] = useState<
+    Array<{ param: string; label: string }>
+  >([]);
 
   const endpoint = config.endpoints.find((e) => e.id === selectedEndpoint);
 
@@ -235,13 +276,28 @@ export default function ApiExplorer({ config }: { config: ApiSourceConfig }) {
     form.resetFields();
     setResponse(null);
     setError(null);
+    setAutoFilled([]);
+
     const ep = config.endpoints.find((e) => e.id === id);
     if (ep) {
       const defaults: Record<string, any> = {};
+      const filled: Array<{ param: string; label: string }> = [];
+
       ep.params.forEach((p) => {
         if (p.default !== undefined) defaults[p.name] = p.default;
       });
+
+      ep.params.forEach((p) => {
+        const key = `${id}::${p.name}`;
+        const extracted = extractedValues.get(key);
+        if (extracted) {
+          defaults[p.name] = extracted.value;
+          filled.push({ param: p.name, label: extracted.label });
+        }
+      });
+
       form.setFieldsValue(defaults);
+      setAutoFilled(filled);
     }
   };
 
@@ -262,16 +318,46 @@ export default function ApiExplorer({ config }: { config: ApiSourceConfig }) {
 
     const start = performance.now();
     try {
-      const res = await fetch(url);
+      const res = await fetch(url, {
+        headers: { 'X-Endpoint-Id': endpoint.id },
+      });
       const timing = Math.round(performance.now() - start);
       const contentType = res.headers.get('content-type') || '';
+      const cacheStatus = res.headers.get('X-Cache') || undefined;
+      const cacheAge = res.headers.get('X-Cache-Age') || undefined;
       let data: any;
       if (contentType.includes('json')) {
         data = await res.json();
       } else {
         data = await res.text();
       }
-      setResponse({ data, status: res.status, timing, url });
+      setResponse({
+        data,
+        status: res.status,
+        timing,
+        url,
+        cacheStatus,
+        cacheAge,
+      });
+
+      if (res.status >= 200 && res.status < 300 && endpoint.extractions) {
+        setExtractedValues((prev) => {
+          const next = new Map(prev);
+          if (endpoint.extractions) {
+            for (const rule of endpoint.extractions) {
+              const val = extractValueFromResponse(data, rule.responsePath);
+              if (val !== undefined && val !== null) {
+                next.set(`${rule.targetEndpoint}::${rule.targetParam}`, {
+                  value: val,
+                  fromEndpoint: endpoint.id,
+                  label: rule.label,
+                });
+              }
+            }
+          }
+          return next;
+        });
+      }
     } catch (err: any) {
       const timing = Math.round(performance.now() - start);
       setError(err.message || 'Request failed');
@@ -351,6 +437,25 @@ export default function ApiExplorer({ config }: { config: ApiSourceConfig }) {
       {/* Parameters */}
       {endpoint && endpoint.params.length > 0 && (
         <Card title="Parameters" size="small">
+          {autoFilled.length > 0 && (
+            <Alert
+              type="info"
+              showIcon
+              closable
+              onClose={() => setAutoFilled([])}
+              message={
+                <span>
+                  Auto-filled from previous response:{' '}
+                  {autoFilled.map((af) => (
+                    <Tag key={af.param} color="blue">
+                      {af.param} &larr; {af.label}
+                    </Tag>
+                  ))}
+                </span>
+              }
+              style={{ marginBottom: 12 }}
+            />
+          )}
           <Form form={form} layout="vertical" size="small">
             {endpoint.params.map((param) => (
               <Form.Item
@@ -440,6 +545,17 @@ export default function ApiExplorer({ config }: { config: ApiSourceConfig }) {
                     {response.status || 'Error'}
                   </Tag>
                   <Tag icon={<ClockCircleOutlined />}>{response.timing}ms</Tag>
+                  {response.cacheStatus && (
+                    <Tag
+                      color={
+                        response.cacheStatus === 'HIT' ? 'purple' : 'default'
+                      }
+                    >
+                      {response.cacheStatus === 'HIT'
+                        ? `Cached (${Math.round(Number(response.cacheAge || 0) / 60)}m ago)`
+                        : 'Fresh'}
+                    </Tag>
+                  )}
                   <Button
                     size="small"
                     icon={<CopyOutlined />}

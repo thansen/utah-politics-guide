@@ -24,9 +24,8 @@ const TableList: React.FC = () => {
   const [selectedRowsState, setSelectedRows] = useState<API.RuleListItem[]>([]);
 
   /**
-   * @en-US International configuration
-   * @zh-CN 国际化配置
-   * */
+   * International configuration
+   */
   const intl = useIntl();
 
   const [messageApi, contextHolder] = message.useMessage();
@@ -89,7 +88,7 @@ const TableList: React.FC = () => {
       renderText: (val: string) =>
         `${val}${intl.formatMessage({
           id: 'pages.searchTable.tenThousand',
-          defaultMessage: ' 万 ',
+          defaultMessage: ' ',
         })}`,
     },
     {
@@ -214,15 +213,12 @@ const TableList: React.FC = () => {
   ];
 
   /**
-   *  Delete node
-   * @zh-CN 删除节点
-   *
-   * @param selectedRows
+   * Delete node
    */
   const handleRemove = useCallback(
     async (selectedRows: API.RuleListItem[]) => {
       if (!selectedRows?.length) {
-        messageApi.warning('请选择删除项');
+        messageApi.warning('Please select items to delete');
 
         return;
       }
@@ -271,7 +267,7 @@ const TableList: React.FC = () => {
               <a style={{ fontWeight: 600 }}>{selectedRowsState.length}</a>{' '}
               <FormattedMessage
                 id="pages.searchTable.item"
-                defaultMessage="项"
+                defaultMessage="item(s)"
               />
               &nbsp;&nbsp;
               <span>
@@ -285,7 +281,7 @@ const TableList: React.FC = () => {
                 )}{' '}
                 <FormattedMessage
                   id="pages.searchTable.tenThousand"
-                  defaultMessage="万"
+                  defaultMessage=""
                 />
               </span>
             </div>

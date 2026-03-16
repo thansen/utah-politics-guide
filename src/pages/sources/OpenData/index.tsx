@@ -142,6 +142,26 @@ const config: ApiSourceConfig = {
       method: 'GET',
       path: '/api/catalog/v1?q={query}&domains=opendata.utah.gov&limit={limit}',
       description: 'Search the full dataset catalog by keyword.',
+      extractions: [
+        {
+          targetEndpoint: 'query-dataset',
+          targetParam: 'dataset_id',
+          responsePath: 'results.resource.id',
+          label: 'dataset_id from catalog-search',
+        },
+        {
+          targetEndpoint: 'dataset-metadata',
+          targetParam: 'dataset_id',
+          responsePath: 'results.resource.id',
+          label: 'dataset_id from catalog-search',
+        },
+        {
+          targetEndpoint: 'count-dataset',
+          targetParam: 'dataset_id',
+          responsePath: 'results.resource.id',
+          label: 'dataset_id from catalog-search',
+        },
+      ],
       params: [
         {
           name: 'query',
@@ -188,7 +208,7 @@ const config: ApiSourceConfig = {
       }
     }
 
-    return `/proxy/open-data${path}`;
+    return `/api/proxy/open-data${path}`;
   },
 };
 

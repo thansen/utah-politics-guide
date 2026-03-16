@@ -2,11 +2,10 @@
 /* eslint-disable */
 import { request } from '@umijs/max';
 
-/** 发送验证码 POST /api/login/captcha */
+/** Send captcha POST /api/login/captcha */
 export async function getFakeCaptcha(
   params: {
-    // query
-    /** 手机号 */
+    /** Phone number */
     phone?: string;
   },
   options?: { [key: string]: any },

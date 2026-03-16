@@ -4,8 +4,16 @@ import defaultSettings from '../config/defaultSettings';
 
 export async function getInitialState(): Promise<{
   settings?: Partial<LayoutSettings>;
+  currentUser?: API.CurrentUser;
+  fetchUserInfo?: () => Promise<API.CurrentUser | undefined>;
 }> {
+  const fetchUserInfo = async (): Promise<API.CurrentUser | undefined> => {
+    return { name: 'Guest', access: 'guest' };
+  };
+
   return {
+    fetchUserInfo,
+    currentUser: { name: 'Guest', access: 'guest' },
     settings: defaultSettings as Partial<LayoutSettings>,
   };
 }

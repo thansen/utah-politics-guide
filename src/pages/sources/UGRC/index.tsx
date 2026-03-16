@@ -20,6 +20,20 @@ const config: ApiSourceConfig = {
       path: '/api/v1/geocode/{street}/{zone}',
       description:
         'Geocode a Utah street address to coordinates. Zone can be a city name or zip code.',
+      extractions: [
+        {
+          targetEndpoint: 'reverse-geocode',
+          targetParam: 'x',
+          responsePath: 'result.location.x',
+          label: 'x from geocode',
+        },
+        {
+          targetEndpoint: 'reverse-geocode',
+          targetParam: 'y',
+          responsePath: 'result.location.y',
+          label: 'y from geocode',
+        },
+      ],
       params: [
         {
           name: 'apikey',
@@ -220,7 +234,7 @@ const config: ApiSourceConfig = {
       qs.append('geometry', `${geometry}:${JSON.stringify({ rings: [] })}`);
 
     const queryString = qs.toString();
-    return `/proxy/ugrc${path}${queryString ? `?${queryString}` : ''}`;
+    return `/api/proxy/ugrc${path}${queryString ? `?${queryString}` : ''}`;
   },
 };
 
